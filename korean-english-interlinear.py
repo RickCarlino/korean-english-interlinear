@@ -2,7 +2,8 @@
 
 # import sys
 # filename = sys.argv[1]
-filename = "/home/ddog/Documents/Korean Learning/HeungbulNorbul2.txt"
+
+filename = "/home/ddog/Documents/Korean Learning/korean-english-interlinear/sample-input.txt"
 
 with open(filename) as f:
     content = f.readlines()
