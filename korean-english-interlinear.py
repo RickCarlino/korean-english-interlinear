@@ -325,8 +325,7 @@ for j in range(len(structured_content)):
 
 con.close()
 
-header = """
-<!DOCTYPE html>
+header = """<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
