@@ -1,6 +1,13 @@
 #!/usr/bin/python
 
+##setup
+database_username = "ddog"
+database_password = ""
+
+
+##initialization
 import sys
+import os.path
 import html
 import urllib.parse
 import psycopg2
@@ -13,17 +20,24 @@ okt = Okt()
 from soylemma import Lemmatizer
 lemmatizer = Lemmatizer()
 
-##input setup
-# filename = sys.argv[1]
-filename = "/home/ddog/Documents/Korean Learning/korean-english-interlinear/sample-input.txt"
+if(1):
+    if(len(sys.argv) < 2):
+        print("Error, no filename specified.")
+        sys.exit(1)
+    filename = sys.argv[1]
+else:
+    filename = "/home/ddog/Documents/Korean Learning/korean-english-interlinear/sample.txt"
 
+if not os.path.exists(filename):
+    print("Error, file not found.")
+    sys.exit(1)
 with open(filename) as f:
     content = f.readlines()
 content = [x.strip() for x in content] 
 
 
 ##connect to database and check tables are there
-con = psycopg2.connect(database="kenddic", user="ddog", password="", host="127.0.0.1", port="5432")
+con = psycopg2.connect(database="kenddic", user=database_username, password=database_password, host="127.0.0.1", port="5432")
 print("Database opened successfully")
 cur = con.cursor()
 
@@ -189,7 +203,10 @@ def get_trans_new_fetch(word, addition = ""):
                     if row[1] == "":
                         print("Note, blank dictionary definition for word: " + row[0])
                         blank_dictionary_definitions.append(row)
-        return "<br>\n".join(["<br>".join([row[0],row[1]]) for row in rows if row is not None])
+        if len(rows) > 20:
+            return "<br>\n".join(["<br>".join([row[0],row[1]]) for row in rows[0:20] if row is not None]) + "<br>..."
+        else:
+            return "<br>\n".join(["<br>".join([row[0],row[1]]) for row in rows if row is not None])
     return ""
     
 def get_trans_new_recursive(word):
@@ -520,7 +537,20 @@ footer = """
 </html>
 """
 
-outF = open(filename + ".html", "w")
+##find a free filename and write output
+if len(filename.split(".")) <= 1:
+    outfilename = filename
+else:
+    outfilename = ".".join(filename.split(".")[0:-1])
+i = 2
+if os.path.exists(outfilename + "-interlinear.html"):
+    while os.path.exists(outfilename + "-" + str(i) + "-interlinear.html"):
+        i = i + 1
+    outfilename = outfilename + "-" + str(i)
+outfilename = outfilename + "-interlinear.html"
+
+print("\nWriting output to: " + outfilename)
+outF = open(outfilename, "w")
 outF.write(header)
 outF.writelines(output)
 outF.write(footer)

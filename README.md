@@ -6,4 +6,7 @@ Requires the following software and python packages to be installed:
 - [Soylemma](https://github.com/lovit/korean_lemmatizer), and
 - [KEngDic dictionary using PostgreSQL](https://github.com/garfieldnate/kengdic).
 
+To run in (Linux) shell:
+./korean-english-interlinear.py sample.txt
+
 ![Alt text](/screenshot.png?raw=true)
