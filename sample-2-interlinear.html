@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!--  http://jsfiddle.net/snifty/Ty8Vp/2/-->
+<!-- https://linguistics.stackexchange.com/questions/3/how-do-i-format-an-interlinear-gloss-for-html -->
+<!-- https://stackabuse.com/text-translation-with-google-translate-api-in-python/ -->
+<!-- http://lostintranslationland.blogspot.com/2011/05/heungbu-and-nolbu.html?m=1 -->
+<!-- https://www.w3schools.com/css/css_tooltip.asp -->
+
+<style>
+ol,ul{
+    list-style:none;
+}
+
+body,div,li,ol,p,pre,ul{
+    margin:0;
+    padding:0;
+}
+
+body {
+    background-color: white; 
+    font-size: 16px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,"Fira Sans","Droid Sans","Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    padding:0;
+    margin:0;
+    background-color: #fdf6e4; font-size: 16px;
+}
+
+a{
+    color:black;
+    text-decoration:none;
+}
+
+a:hover{
+    text-decoration:underline;
+}
+
+div.wrapper { 
+    padding: 5px;
+  overflow:visible;   
+  margin: 1em 0;
+  clear:both;
+   font-size: 16px;
+}
+
+ol.sentence { 
+  display:inline;    
+}
+
+ol.sentence li[lang=es]{
+   font-weight:bold;  
+    font-size: 20px; 
+}
+
+ol.sentence li[lang=en_MORPH]{
+   font-family: monospace;  
+   padding-top: 5px;
+    font-size: 10px;
+    color:#aaa;
+}
+
+ol.word { 
+ padding: .5em;
+ margin-bottom: .5em;
+ background: white;
+ float:left;
+ border: 1px dotted #ddd;
+ display: inline-block;   
+ height: 6em;
+}
+
+ol.comment { 
+ padding: .5em;
+ margin-bottom: .5em;
+ background: white;
+ float:left;
+ border: 1px dotted #ccc;
+ display: inline-block;   
+}
+
+/* Tooltip container */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  /*border-bottom: 1px dotted black; If you want dots under the hoverable text */
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: #fdf6e4;
+  color: #333;
+  text-align: left;
+  font-size: 10px;
+  padding: 5px 5px;
+  border-radius: 6px;
+border: 1px dotted #ccc; 
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+}
+
+.tooltip .tooltiptext {
+  top: -5px;
+  left: 105%;
+}
+
+.tooltip .tooltiptext::after {
+  content: " ";
+  position: absolute;
+  top: 12px;
+  right: 100%; /* To the left of the tooltip */
+  margin-top: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent hsla(0, 0%, 80%, 50) transparent transparent;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+a.diclink {
+    text-decoration: none;
+}
+</style>
+</head>
+<body>
+<div class=wrapper>
+    <ol class=sentence>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%8F%99%ED%95%B4%EB%AC%BC%EA%B3%BC"><span style='color:hsl(0, 0%, 20%);'>동해</span><span style='color:hsl(0, 0%, 20%);'>물</span><span style='color:#657b85;'>과</span></a></li>
+        <li lang=en_MORPH class=tooltip>동해 NNP<br>물 NNG<br>과 JC<span class=tooltiptext>동해 ProperNoun<br>물 CommonNoun<br>과 AuxiliaryPostposition</span></li><br>
+        <li lang=en_MORPH class=tooltip>동<br>a Dong, <span class=tooltiptext>동<br>a Dong, which is smaller than a Ku, which is smaller than a city<br>
+동<br>copper<br>
+동<br>East (one of the 4 directions)<br>
+동<br>the same</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%B0%B1%EB%91%90%EC%82%B0%EC%9D%B4"><span style='color:hsl(0, 0%, 20%);'>백두산</span><span style='color:#657b85;'>이</span></a></li>
+        <li lang=en_MORPH class=tooltip>백두산 NNP<br>이 JKS<span class=tooltiptext>백두산 ProperNoun<br>이 CaseMarker</span></li><br>
+        <li lang=en_MORPH class=tooltip>백두산<br>Korean m<span class=tooltiptext>백두산<br>Korean mountain</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%A7%88%EB%A5%B4%EA%B3%A0"><span style='color:#cc4a0e;'>마르</span><span style='color:#657b85;'>고</span></a></li>
+        <li lang=en_MORPH class=tooltip>마르 VV<br>고 EC<span class=tooltiptext>마르 VerbalPredicate<br>고 VerbalEnding</span></li><br>
+        <li lang=en_MORPH class=tooltip>마르다<br>Become d<span class=tooltiptext>마르다<br>Become dry<br>
+마르다<br>to be skinny</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%8B%B3%EB%8F%84%EB%A1%9D"><span style='color:#cc4a0e;'>닳</span><span style='color:#657b85;'>도록</span></a></li>
+        <li lang=en_MORPH class=tooltip>닳 VV<br>도록 EC<span class=tooltiptext>닳 VerbalPredicate<br>도록 VerbalEnding</span></li><br>
+        <li lang=en_MORPH class=tooltip>닳다<br>to be wo<span class=tooltiptext>닳다<br>to be worn out/tired out</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%ED%95%98%EB%8A%90%EB%8B%98%EC%9D%B4"><span style='color:hsl(0, 0%, 20%);'>하느님</span><span style='color:#657b85;'>이</span></a></li>
+        <li lang=en_MORPH class=tooltip>하느님 NNG<br>이 JKS<span class=tooltiptext>하느님 CommonNoun<br>이 CaseMarker</span></li><br>
+        <li lang=en_MORPH class=tooltip>하느님<br>God<span class=tooltiptext>하느님<br>God</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%B3%B4%EC%9A%B0%ED%95%98%EC%82%AC"><span style='color:hsl(0, 0%, 20%);'>보우</span><span style='color:#657b85;'>하</span><span style='color:#657b85;'>사</span></a></li>
+        <li lang=en_MORPH class=tooltip>보우 NNG<br>하 XSV<br>사 EC<span class=tooltiptext>보우 CommonNoun<br>하 Suffix<br>사 VerbalEnding</span></li><br>
+        <li lang=en_MORPH class=tooltip>(?)보트<br>boat<span class=tooltiptext>(?)보트<br>boat<br>
+보도<br>news, a report<br>
+보양<br>keep<br>
+보름<br>15days,the 15th day<br>
+보루<br>a fort, walls of concrete/stone to protect from invaders<br>
+보관<br>custody,deposit<br>
+보조<br>assistance,aid<br>
+보다<br>To try<br>
+보편<br>catholicity, generality, universality<br>
+보잉<br>bowing<br>
+보증<br>assurance, certification, guaranty, warranty, attestation<br>
+보좌<br>helping the (military) officers<br>
+보약<br><br>
+보매<br>evidently<br>
+보지<br>maintenance, preservation<br>
+보빙<br>bobbing<br>
+보상<br>Compensation<br>
+보완<br>to supplement and make complete, to add to<br>
+보험<br>guarantee,insurance<br>
+보측<br>pacing<br>...</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%9A%B0%EB%A6%AC%EB%82%98%EB%9D%BC"><span style='color:#25a399;'>우리</span><span style='color:hsl(0, 0%, 20%);'>나라</span></a></li>
+        <li lang=en_MORPH class=tooltip>우리 NP<br>나라 NNG<span class=tooltiptext>우리 Pronoun<br>나라 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>우리나라<br>Korea<span class=tooltiptext>우리나라<br>Korea</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%A7%8C%EC%84%B8"><span style='color:hsl(0, 0%, 20%);'>만세</span></a></li>
+        <li lang=en_MORPH class=tooltip>만세 NNG<span class=tooltiptext>만세 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>만세<br>10,000 y<span class=tooltiptext>만세<br>10,000 years<br>
+만세<br>cowabunga, heil, rah, ray, yippee</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%AC%B4%EA%B6%81%ED%99%94"><span style='color:hsl(0, 0%, 20%);'>무궁화</span></a></li>
+        <li lang=en_MORPH class=tooltip>무궁화 NNG<span class=tooltiptext>무궁화 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>무궁화<br>The rose<span class=tooltiptext>무궁화<br>The rose of Sharon</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%82%BC%EC%B2%9C%EB%A6%AC"><span style='color:hsl(0, 0%, 20%);'>삼천리</span></a></li>
+        <li lang=en_MORPH class=tooltip>삼천리 NNG<span class=tooltiptext>삼천리 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>삼천리<br><span class=tooltiptext>삼천리<br></span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%ED%99%94%EB%A0%A4"><span style='color:#657b85;'>화려</span></a></li>
+        <li lang=en_MORPH class=tooltip>화려 XR<span class=tooltiptext>화려 Radical</span></li><br>
+        <li lang=en_MORPH class=tooltip>화려<br>grandeur<span class=tooltiptext>화려<br>grandeur, luxuriance</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EA%B0%95%EC%82%B0"><span style='color:hsl(0, 0%, 20%);'>강산</span></a></li>
+        <li lang=en_MORPH class=tooltip>강산 NNG<span class=tooltiptext>강산 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>강산<br>natural <span class=tooltiptext>강산<br>natural beauty</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%8C%80%ED%95%9C"><span style='color:#cc4a0e;'>대한</span></a></li>
+        <li lang=en_MORPH class=tooltip>대한 VV+ETM<span class=tooltiptext>대한 VerbalPredicate</span></li><br>
+        <li lang=en_MORPH class=tooltip>대한<br>a big dr<span class=tooltiptext>대한<br>a big drought<br>
+대한<br>the very cold and depth of winter</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%82%AC%EB%9E%8C"><span style='color:hsl(0, 0%, 20%);'>사람</span></a></li>
+        <li lang=en_MORPH class=tooltip>사람 NNG<span class=tooltiptext>사람 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>사람<br>oracle<span class=tooltiptext>사람<br>oracle<br>
+사람<br>Person</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%8C%80%ED%95%9C%EC%9C%BC%EB%A1%9C"><span style='color:hsl(0, 0%, 20%);'>대한</span><span style='color:#657b85;'>으로</span></a></li>
+        <li lang=en_MORPH class=tooltip>대한 NNP<br>으로 JKB<span class=tooltiptext>대한 ProperNoun<br>으로 CaseMarker</span></li><br>
+        <li lang=en_MORPH class=tooltip>대한<br>a big dr<span class=tooltiptext>대한<br>a big drought<br>
+대한<br>the very cold and depth of winter</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EA%B8%B8%EC%9D%B4"><span style='color:hsl(0, 0%, 20%);'>길이</span></a></li>
+        <li lang=en_MORPH class=tooltip>길이 NNG<span class=tooltiptext>길이 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>길이<br>Length o<span class=tooltiptext>길이<br>Length or extent</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%B3%B4%EC%A0%84%ED%95%98%EC%84%B8"><span style='color:hsl(0, 0%, 20%);'>보전</span><span style='color:#657b85;'>하</span><span style='color:#657b85;'>세</span></a></li>
+        <li lang=en_MORPH class=tooltip>보전 NNG<br>하 XSV<br>세 EC<span class=tooltiptext>보전 CommonNoun<br>하 Suffix<br>세 VerbalEnding</span></li><br>
+        <li lang=en_MORPH class=tooltip>보전<br>ingegrit<span class=tooltiptext>보전<br>ingegrity,preservation</span></li>
+      </ol>
+    </li>
+    </ol>
+</div>
+<div class=wrapper>
+    <ol class=sentence>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%82%A8%EC%82%B0"><span style='color:hsl(0, 0%, 20%);'>남산</span></a></li>
+        <li lang=en_MORPH class=tooltip>남산 NNG<span class=tooltiptext>남산 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>남산<br>Mountain<span class=tooltiptext>남산<br>Mountain in south central seoul</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%9C%84%EC%97%90"><span style='color:hsl(0, 0%, 20%);'>위</span><span style='color:#657b85;'>에</span></a></li>
+        <li lang=en_MORPH class=tooltip>위 NNG<br>에 JKB<span class=tooltiptext>위 CommonNoun<br>에 CaseMarker</span></li><br>
+        <li lang=en_MORPH class=tooltip>위에<br>hereinbe<span class=tooltiptext>위에<br>hereinbefore<br>
+위에<br>on<br>
+위에<br>superior, supra, hereinbefore</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%A0%80"><span style='color:#25a399;'>저</span></a></li>
+        <li lang=en_MORPH class=tooltip>저 NP<span class=tooltiptext>저 Pronoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>저<br>polite f<span class=tooltiptext>저<br>polite first person pronoun, me/I<br>
+저<br>Uh, well,  ...</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%86%8C%EB%82%98%EB%AC%B4"><span style='color:hsl(0, 0%, 20%);'>소나무</span></a></li>
+        <li lang=en_MORPH class=tooltip>소나무 NNG<span class=tooltiptext>소나무 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>소나무<br>A pine t<span class=tooltiptext>소나무<br>A pine tree</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%B2%A0%EA%B0%91%EC%9D%84"><span style='color:hsl(0, 0%, 20%);'>철갑</span><span style='color:#657b85;'>을</span></a></li>
+        <li lang=en_MORPH class=tooltip>철갑 NNG<br>을 JKO<span class=tooltiptext>철갑 CommonNoun<br>을 CaseMarker</span></li><br>
+        <li lang=en_MORPH class=tooltip>철갑<br>armor<span class=tooltiptext>철갑<br>armor</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%91%90%EB%A5%B8"><span style='color:#cc4a0e;'>두른</span></a></li>
+        <li lang=en_MORPH class=tooltip>두른 VV+ETM<span class=tooltiptext>두른 VerbalPredicate</span></li><br>
+        <li lang=en_MORPH class=tooltip>두르다<br>enclose,<span class=tooltiptext>두르다<br>enclose, enwreathe, surround, wreathe<br>
+두르다<br>to grease a pan</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%93%AF%EB%B0%94%EB%9E%8C"><span style='color:hsl(0, 0%, 20%);'>듯</span><span style='color:hsl(0, 0%, 20%);'>바람</span></a></li>
+        <li lang=en_MORPH class=tooltip>듯 NNB<br>바람 NNG<span class=tooltiptext>듯 CommonNoun<br>바람 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>듯<br>To be li<span class=tooltiptext>듯<br>To be like something</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%84%9C%EB%A6%AC"><span style='color:hsl(0, 0%, 20%);'>서리</span></a></li>
+        <li lang=en_MORPH class=tooltip>서리 NNG<span class=tooltiptext>서리 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>서리<br>a proxy<span class=tooltiptext>서리<br>a proxy<br>
+서리<br>frost, Jack Frost, rime</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%B6%88%EB%B3%80%ED%95%A8%EC%9D%80"><span style='color:hsl(0, 0%, 20%);'>불변</span><span style='color:#657b85;'>함</span><span style='color:#657b85;'>은</span></a></li>
+        <li lang=en_MORPH class=tooltip>불변 NNG<br>함 XSA+ETN<br>은 JX<span class=tooltiptext>불변 CommonNoun<br>함 Suffix<br>은 AuxiliaryPostposition</span></li><br>
+        <li lang=en_MORPH class=tooltip>불변<br>constanc<span class=tooltiptext>불변<br>constancy, immutability, stability, steadiness</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%9A%B0%EB%A6%AC"><span style='color:#25a399;'>우리</span></a></li>
+        <li lang=en_MORPH class=tooltip>우리 NP<span class=tooltiptext>우리 Pronoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>우리<br>we,our<span class=tooltiptext>우리<br>we,our</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EA%B8%B0%EC%83%81%EC%9D%BC%EC%84%B8"><span style='color:hsl(0, 0%, 20%);'>기상</span><span style='color:#cc4a0e;'>일세</span></a></li>
+        <li lang=en_MORPH class=tooltip>기상 NNG<br>일세 VCP+EC<span class=tooltiptext>기상 CommonNoun<br>일세 Copula</span></li><br>
+        <li lang=en_MORPH class=tooltip>기상<br>a person<span class=tooltiptext>기상<br>a person&#x27;s spirit or temperament<br>
+기상<br>fantasy<br>
+기상<br>meteorology<br>
+기상<br>rising up out of bed, wakey-wakey<br>
+기상<br>the property of being gaseous/a vapor</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%AC%B4%EA%B6%81%ED%99%94"><span style='color:hsl(0, 0%, 20%);'>무궁화</span></a></li>
+        <li lang=en_MORPH class=tooltip>무궁화 NNG<span class=tooltiptext>무궁화 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>무궁화<br>The rose<span class=tooltiptext>무궁화<br>The rose of Sharon</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%82%BC%EC%B2%9C%EB%A6%AC"><span style='color:hsl(0, 0%, 20%);'>삼천리</span></a></li>
+        <li lang=en_MORPH class=tooltip>삼천리 NNG<span class=tooltiptext>삼천리 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>삼천리<br><span class=tooltiptext>삼천리<br></span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%ED%99%94%EB%A0%A4"><span style='color:#657b85;'>화려</span></a></li>
+        <li lang=en_MORPH class=tooltip>화려 XR<span class=tooltiptext>화려 Radical</span></li><br>
+        <li lang=en_MORPH class=tooltip>화려<br>grandeur<span class=tooltiptext>화려<br>grandeur, luxuriance</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EA%B0%95%EC%82%B0"><span style='color:hsl(0, 0%, 20%);'>강산</span></a></li>
+        <li lang=en_MORPH class=tooltip>강산 NNG<span class=tooltiptext>강산 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>강산<br>natural <span class=tooltiptext>강산<br>natural beauty</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%8C%80%ED%95%9C"><span style='color:#cc4a0e;'>대한</span></a></li>
+        <li lang=en_MORPH class=tooltip>대한 VV+ETM<span class=tooltiptext>대한 VerbalPredicate</span></li><br>
+        <li lang=en_MORPH class=tooltip>대한<br>a big dr<span class=tooltiptext>대한<br>a big drought<br>
+대한<br>the very cold and depth of winter</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%82%AC%EB%9E%8C"><span style='color:hsl(0, 0%, 20%);'>사람</span></a></li>
+        <li lang=en_MORPH class=tooltip>사람 NNG<span class=tooltiptext>사람 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>사람<br>oracle<span class=tooltiptext>사람<br>oracle<br>
+사람<br>Person</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%8C%80%ED%95%9C%EC%9C%BC%EB%A1%9C"><span style='color:hsl(0, 0%, 20%);'>대한</span><span style='color:#657b85;'>으로</span></a></li>
+        <li lang=en_MORPH class=tooltip>대한 NNP<br>으로 JKB<span class=tooltiptext>대한 ProperNoun<br>으로 CaseMarker</span></li><br>
+        <li lang=en_MORPH class=tooltip>대한<br>a big dr<span class=tooltiptext>대한<br>a big drought<br>
+대한<br>the very cold and depth of winter</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EA%B8%B8%EC%9D%B4"><span style='color:hsl(0, 0%, 20%);'>길이</span></a></li>
+        <li lang=en_MORPH class=tooltip>길이 NNG<span class=tooltiptext>길이 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>길이<br>Length o<span class=tooltiptext>길이<br>Length or extent</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%B3%B4%EC%A0%84%ED%95%98%EC%84%B8"><span style='color:hsl(0, 0%, 20%);'>보전</span><span style='color:#657b85;'>하</span><span style='color:#657b85;'>세</span></a></li>
+        <li lang=en_MORPH class=tooltip>보전 NNG<br>하 XSV<br>세 EC<span class=tooltiptext>보전 CommonNoun<br>하 Suffix<br>세 VerbalEnding</span></li><br>
+        <li lang=en_MORPH class=tooltip>보전<br>ingegrit<span class=tooltiptext>보전<br>ingegrity,preservation</span></li>
+      </ol>
+    </li>
+    </ol>
+</div>
+<div class=wrapper>
+    <ol class=sentence>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EA%B0%80%EC%9D%84"><span style='color:hsl(0, 0%, 20%);'>가을</span></a></li>
+        <li lang=en_MORPH class=tooltip>가을 NNG<span class=tooltiptext>가을 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>가을<br>Autumn o<span class=tooltiptext>가을<br>Autumn or  fall</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%ED%95%98%EB%8A%98"><span style='color:hsl(0, 0%, 20%);'>하늘</span></a></li>
+        <li lang=en_MORPH class=tooltip>하늘 NNG<span class=tooltiptext>하늘 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>하늘<br>The sky<span class=tooltiptext>하늘<br>The sky</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EA%B3%B5%ED%99%9C%ED%95%9C%EB%8D%B0"><span style='color:#657b85;'>공활</span><span style='color:#657b85;'>한데</span></a></li>
+        <li lang=en_MORPH class=tooltip>공활 XR<br>한데 XSA+EC<span class=tooltiptext>공활 Radical<br>한데 Suffix</span></li><br>
+        <li lang=en_MORPH class=tooltip>공<br>Ball<span class=tooltiptext>공<br>Ball<br>
+공<br>meritorious labors, good labors, good efforts</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%86%92%EA%B3%A0"><span style='color:#cc4a0e;'>높</span><span style='color:#657b85;'>고</span></a></li>
+        <li lang=en_MORPH class=tooltip>높 VA<br>고 EC<span class=tooltiptext>높 Adjective<br>고 VerbalEnding</span></li><br>
+        <li lang=en_MORPH class=tooltip>높다<br>High<span class=tooltiptext>높다<br>High</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EA%B5%AC%EB%A6%84"><span style='color:hsl(0, 0%, 20%);'>구름</span></a></li>
+        <li lang=en_MORPH class=tooltip>구름 NNG<span class=tooltiptext>구름 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>구름<br>A cloud <span class=tooltiptext>구름<br>A cloud or  the clouds</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%97%86%EC%9D%B4"><span style='color:#b78a00;'>없이</span></a></li>
+        <li lang=en_MORPH class=tooltip>없이 MAG<span class=tooltiptext>없이 GeneralAdverb</span></li><br>
+        <li lang=en_MORPH class=tooltip>없이<br>Without<span class=tooltiptext>없이<br>Without</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%B0%9D%EC%9D%80"><span style='color:#cc4a0e;'>밝</span><span style='color:#657b85;'>은</span></a></li>
+        <li lang=en_MORPH class=tooltip>밝 VA<br>은 ETM<span class=tooltiptext>밝 Adjective<br>은 VerbalEnding</span></li><br>
+        <li lang=en_MORPH class=tooltip>밝다<br>To be br<span class=tooltiptext>밝다<br>To be bright<br>
+밝다<br>To be promising</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%8B%AC%EC%9D%80"><span style='color:hsl(0, 0%, 20%);'>달</span><span style='color:#657b85;'>은</span></a></li>
+        <li lang=en_MORPH class=tooltip>달 NNG<br>은 JX<span class=tooltiptext>달 CommonNoun<br>은 AuxiliaryPostposition</span></li><br>
+        <li lang=en_MORPH class=tooltip>달<br>a month<span class=tooltiptext>달<br>a month<br>
+달<br>The moon</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%9A%B0%EB%A6%AC"><span style='color:#25a399;'>우리</span></a></li>
+        <li lang=en_MORPH class=tooltip>우리 NP<span class=tooltiptext>우리 Pronoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>우리<br>we,our<span class=tooltiptext>우리<br>we,our</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EA%B0%80%EC%8A%B4"><span style='color:hsl(0, 0%, 20%);'>가슴</span></a></li>
+        <li lang=en_MORPH class=tooltip>가슴 NNG<span class=tooltiptext>가슴 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>가슴<br>Chest<span class=tooltiptext>가슴<br>Chest</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%9D%BC%ED%8E%B8%EB%8B%A8%EC%8B%AC%EC%9D%BC%EC%84%B8"><span style='color:hsl(0, 0%, 20%);'>일편단심</span><span style='color:#cc4a0e;'>일세</span></a></li>
+        <li lang=en_MORPH class=tooltip>일편단심 NNG<br>일세 VCP+EC<span class=tooltiptext>일편단심 CommonNoun<br>일세 Copula</span></li><br>
+        <li lang=en_MORPH class=tooltip>일편단심<br><span class=tooltiptext>일편단심<br></span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%AC%B4%EA%B6%81%ED%99%94"><span style='color:hsl(0, 0%, 20%);'>무궁화</span></a></li>
+        <li lang=en_MORPH class=tooltip>무궁화 NNG<span class=tooltiptext>무궁화 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>무궁화<br>The rose<span class=tooltiptext>무궁화<br>The rose of Sharon</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%82%BC%EC%B2%9C%EB%A6%AC"><span style='color:hsl(0, 0%, 20%);'>삼천리</span></a></li>
+        <li lang=en_MORPH class=tooltip>삼천리 NNG<span class=tooltiptext>삼천리 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>삼천리<br><span class=tooltiptext>삼천리<br></span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%ED%99%94%EB%A0%A4"><span style='color:#657b85;'>화려</span></a></li>
+        <li lang=en_MORPH class=tooltip>화려 XR<span class=tooltiptext>화려 Radical</span></li><br>
+        <li lang=en_MORPH class=tooltip>화려<br>grandeur<span class=tooltiptext>화려<br>grandeur, luxuriance</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EA%B0%95%EC%82%B0"><span style='color:hsl(0, 0%, 20%);'>강산</span></a></li>
+        <li lang=en_MORPH class=tooltip>강산 NNG<span class=tooltiptext>강산 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>강산<br>natural <span class=tooltiptext>강산<br>natural beauty</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%8C%80%ED%95%9C"><span style='color:#cc4a0e;'>대한</span></a></li>
+        <li lang=en_MORPH class=tooltip>대한 VV+ETM<span class=tooltiptext>대한 VerbalPredicate</span></li><br>
+        <li lang=en_MORPH class=tooltip>대한<br>a big dr<span class=tooltiptext>대한<br>a big drought<br>
+대한<br>the very cold and depth of winter</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%82%AC%EB%9E%8C"><span style='color:hsl(0, 0%, 20%);'>사람</span></a></li>
+        <li lang=en_MORPH class=tooltip>사람 NNG<span class=tooltiptext>사람 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>사람<br>oracle<span class=tooltiptext>사람<br>oracle<br>
+사람<br>Person</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%8C%80%ED%95%9C%EC%9C%BC%EB%A1%9C"><span style='color:hsl(0, 0%, 20%);'>대한</span><span style='color:#657b85;'>으로</span></a></li>
+        <li lang=en_MORPH class=tooltip>대한 NNP<br>으로 JKB<span class=tooltiptext>대한 ProperNoun<br>으로 CaseMarker</span></li><br>
+        <li lang=en_MORPH class=tooltip>대한<br>a big dr<span class=tooltiptext>대한<br>a big drought<br>
+대한<br>the very cold and depth of winter</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EA%B8%B8%EC%9D%B4"><span style='color:hsl(0, 0%, 20%);'>길이</span></a></li>
+        <li lang=en_MORPH class=tooltip>길이 NNG<span class=tooltiptext>길이 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>길이<br>Length o<span class=tooltiptext>길이<br>Length or extent</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%B3%B4%EC%A0%84%ED%95%98%EC%84%B8"><span style='color:hsl(0, 0%, 20%);'>보전</span><span style='color:#657b85;'>하</span><span style='color:#657b85;'>세</span></a></li>
+        <li lang=en_MORPH class=tooltip>보전 NNG<br>하 XSV<br>세 EC<span class=tooltiptext>보전 CommonNoun<br>하 Suffix<br>세 VerbalEnding</span></li><br>
+        <li lang=en_MORPH class=tooltip>보전<br>ingegrit<span class=tooltiptext>보전<br>ingegrity,preservation</span></li>
+      </ol>
+    </li>
+    </ol>
+</div>
+<div class=wrapper>
+    <ol class=sentence>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%9D%B4"><span style='color:#729f01;'>이</span></a></li>
+        <li lang=en_MORPH class=tooltip>이 MM<span class=tooltiptext>이 Determiner</span></li><br>
+        <li lang=en_MORPH class=tooltip>이<br>A person<span class=tooltiptext>이<br>A person, a man/woman<br>
+이<br>A tooth<br>
+이<br>this,this thing<br>
+이<br>Two</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EA%B8%B0%EC%83%81%EA%B3%BC"><span style='color:hsl(0, 0%, 20%);'>기상</span><span style='color:#657b85;'>과</span></a></li>
+        <li lang=en_MORPH class=tooltip>기상 NNG<br>과 JC<span class=tooltiptext>기상 CommonNoun<br>과 AuxiliaryPostposition</span></li><br>
+        <li lang=en_MORPH class=tooltip>기상<br>a person<span class=tooltiptext>기상<br>a person&#x27;s spirit or temperament<br>
+기상<br>fantasy<br>
+기상<br>meteorology<br>
+기상<br>rising up out of bed, wakey-wakey<br>
+기상<br>the property of being gaseous/a vapor</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%9D%B4"><span style='color:#729f01;'>이</span></a></li>
+        <li lang=en_MORPH class=tooltip>이 MM<span class=tooltiptext>이 Determiner</span></li><br>
+        <li lang=en_MORPH class=tooltip>이<br>A person<span class=tooltiptext>이<br>A person, a man/woman<br>
+이<br>A tooth<br>
+이<br>this,this thing<br>
+이<br>Two</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%A7%98%EC%9C%BC%EB%A1%9C"><span style='color:hsl(0, 0%, 20%);'>맘</span><span style='color:#657b85;'>으로</span></a></li>
+        <li lang=en_MORPH class=tooltip>맘 NNG<br>으로 JKB<span class=tooltiptext>맘 CommonNoun<br>으로 CaseMarker</span></li><br>
+        <li lang=en_MORPH class=tooltip>맘<br>Heart<span class=tooltiptext>맘<br>Heart</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%B6%A9%EC%84%B1%EC%9D%84"><span style='color:hsl(0, 0%, 20%);'>충성</span><span style='color:#657b85;'>을</span></a></li>
+        <li lang=en_MORPH class=tooltip>충성 NNG<br>을 JKO<span class=tooltiptext>충성 CommonNoun<br>을 CaseMarker</span></li><br>
+        <li lang=en_MORPH class=tooltip>충성<br>allegian<span class=tooltiptext>충성<br>allegiance, loyalty</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%8B%A4%ED%95%98%EC%97%AC"><span style='color:#b78a00;'>다</span><span style='color:#cc4a0e;'>하</span><span style='color:#657b85;'>여</span></a></li>
+        <li lang=en_MORPH class=tooltip>다 MAG<br>하 VV<br>여 EC<span class=tooltiptext>다 GeneralAdverb<br>하 VerbalPredicate<br>여 VerbalEnding</span></li><br>
+        <li lang=en_MORPH class=tooltip>다<br>All, eve<span class=tooltiptext>다<br>All, everything</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EA%B4%B4%EB%A1%9C%EC%9A%B0%EB%82%98"><span style='color:#cc4a0e;'>괴로우</span><span style='color:#657b85;'>나</span></a></li>
+        <li lang=en_MORPH class=tooltip>괴로우 VA<br>나 EC<span class=tooltiptext>괴로우 Adjective<br>나 VerbalEnding</span></li><br>
+        <li lang=en_MORPH class=tooltip>괴롭다<br>Be painf<span class=tooltiptext>괴롭다<br>Be painful or  distressing</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%A6%90%EA%B1%B0%EC%9A%B0%EB%82%98"><span style='color:#cc4a0e;'>즐거우</span><span style='color:#657b85;'>나</span></a></li>
+        <li lang=en_MORPH class=tooltip>즐거우 VA<br>나 EC<span class=tooltiptext>즐거우 Adjective<br>나 VerbalEnding</span></li><br>
+        <li lang=en_MORPH class=tooltip>즐겁다<br>To be pl<span class=tooltiptext>즐겁다<br>To be pleasant, agreeable</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%82%98%EB%9D%BC"><span style='color:hsl(0, 0%, 20%);'>나라</span></a></li>
+        <li lang=en_MORPH class=tooltip>나라 NNG<span class=tooltiptext>나라 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>나라<br>A countr<span class=tooltiptext>나라<br>A country</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%82%AC%EB%9E%91%ED%95%98%EC%84%B8"><span style='color:hsl(0, 0%, 20%);'>사랑</span><span style='color:#657b85;'>하</span><span style='color:#657b85;'>세</span></a></li>
+        <li lang=en_MORPH class=tooltip>사랑 NNG<br>하 XSV<br>세 EC<span class=tooltiptext>사랑 CommonNoun<br>하 Suffix<br>세 VerbalEnding</span></li><br>
+        <li lang=en_MORPH class=tooltip>사랑<br>love<span class=tooltiptext>사랑<br>love<br>
+사랑<br>Love</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%AC%B4%EA%B6%81%ED%99%94"><span style='color:hsl(0, 0%, 20%);'>무궁화</span></a></li>
+        <li lang=en_MORPH class=tooltip>무궁화 NNG<span class=tooltiptext>무궁화 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>무궁화<br>The rose<span class=tooltiptext>무궁화<br>The rose of Sharon</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%82%BC%EC%B2%9C%EB%A6%AC"><span style='color:hsl(0, 0%, 20%);'>삼천리</span></a></li>
+        <li lang=en_MORPH class=tooltip>삼천리 NNG<span class=tooltiptext>삼천리 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>삼천리<br><span class=tooltiptext>삼천리<br></span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%ED%99%94%EB%A0%A4"><span style='color:#657b85;'>화려</span></a></li>
+        <li lang=en_MORPH class=tooltip>화려 XR<span class=tooltiptext>화려 Radical</span></li><br>
+        <li lang=en_MORPH class=tooltip>화려<br>grandeur<span class=tooltiptext>화려<br>grandeur, luxuriance</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EA%B0%95%EC%82%B0"><span style='color:hsl(0, 0%, 20%);'>강산</span></a></li>
+        <li lang=en_MORPH class=tooltip>강산 NNG<span class=tooltiptext>강산 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>강산<br>natural <span class=tooltiptext>강산<br>natural beauty</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%8C%80%ED%95%9C"><span style='color:#cc4a0e;'>대한</span></a></li>
+        <li lang=en_MORPH class=tooltip>대한 VV+ETM<span class=tooltiptext>대한 VerbalPredicate</span></li><br>
+        <li lang=en_MORPH class=tooltip>대한<br>a big dr<span class=tooltiptext>대한<br>a big drought<br>
+대한<br>the very cold and depth of winter</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EC%82%AC%EB%9E%8C"><span style='color:hsl(0, 0%, 20%);'>사람</span></a></li>
+        <li lang=en_MORPH class=tooltip>사람 NNG<span class=tooltiptext>사람 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>사람<br>oracle<span class=tooltiptext>사람<br>oracle<br>
+사람<br>Person</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%8C%80%ED%95%9C%EC%9C%BC%EB%A1%9C"><span style='color:hsl(0, 0%, 20%);'>대한</span><span style='color:#657b85;'>으로</span></a></li>
+        <li lang=en_MORPH class=tooltip>대한 NNP<br>으로 JKB<span class=tooltiptext>대한 ProperNoun<br>으로 CaseMarker</span></li><br>
+        <li lang=en_MORPH class=tooltip>대한<br>a big dr<span class=tooltiptext>대한<br>a big drought<br>
+대한<br>the very cold and depth of winter</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EA%B8%B8%EC%9D%B4"><span style='color:hsl(0, 0%, 20%);'>길이</span></a></li>
+        <li lang=en_MORPH class=tooltip>길이 NNG<span class=tooltiptext>길이 CommonNoun</span></li><br>
+        <li lang=en_MORPH class=tooltip>길이<br>Length o<span class=tooltiptext>길이<br>Length or extent</span></li>
+      </ol>
+    </li>
+    <li>
+      <ol class=word>
+        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="https://en.dict.naver.com/#/search?query=%EB%B3%B4%EC%A0%84%ED%95%98%EC%84%B8"><span style='color:hsl(0, 0%, 20%);'>보전</span><span style='color:#657b85;'>하</span><span style='color:#657b85;'>세</span></a></li>
+        <li lang=en_MORPH class=tooltip>보전 NNG<br>하 XSV<br>세 EC<span class=tooltiptext>보전 CommonNoun<br>하 Suffix<br>세 VerbalEnding</span></li><br>
+        <li lang=en_MORPH class=tooltip>보전<br>ingegrit<span class=tooltiptext>보전<br>ingegrity,preservation</span></li>
+      </ol>
+    </li>
+    </ol>
+</div>
+<div class=wrapper>
+    <ol class=sentence>
+    <li>
+      <ol class=comment>
+        <li lang=en_MORPH>
+Comments may be marked in input text with hash tag.
+        </li>
+      </ol>
+    </li>
+    </ol>
+</div>
+<div class=wrapper>
+    <ol class=sentence>
+    <li>
+      <ol class=comment>
+        <li lang=en_MORPH>
+The above generated from Korean text sample from https://search.naver.com/search.naver?sm=tab_sug.top&amp;where=nexearch&amp;query=%EC%95%A0%EA%B5%AD%EA%B0%80+%EA%B0%80%EC%82%AC&amp;oquery=thskrl&amp;tqi=UJW6FlprvTVsssmd1UNssssstoZ-093930&amp;acq=dornrrk&amp;acr=1&amp;qdt=0
+        </li>
+      </ol>
+    </li>
+    </ol>
+</div>
+
+</body>
+</html>

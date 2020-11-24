@@ -37,7 +37,7 @@ content = [x.strip() for x in content]
 
 
 ##connect to database and check tables are there
-con = psycopg2.connect(database="kenddic", user=database_username, password=database_password, host="127.0.0.1", port="5432")
+con = psycopg2.connect(database="kenddic", user=database_username, password=database_password, host="localhost")
 print("Database opened successfully")
 cur = con.cursor()
 
