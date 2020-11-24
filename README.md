@@ -10,6 +10,6 @@ Requires the [KEngDic dictionary](https://github.com/garfieldnate/kengdic) to be
 To run in (Linux) shell:
 ./korean-english-interlinear.py sample.txt
 
-Outputs an HTML file with a simmilar name.
+Outputs an HTML file with a similar name.
 
 ![Alt text](/screenshot.png?raw=true)

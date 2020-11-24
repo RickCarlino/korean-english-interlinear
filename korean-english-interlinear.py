@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 ##setup
-database_username = "ddog"
+database_username = ""
 database_password = ""
 
 
@@ -26,7 +26,7 @@ if(1):
         sys.exit(1)
     filename = sys.argv[1]
 else:
-    filename = "/home/ddog/Documents/Korean Learning/korean-english-interlinear/sample.txt"
+    filename = os.getcwd() + "/Documents/Korean Learning/korean-english-interlinear/sample.txt"
 
 if not os.path.exists(filename):
     print("Error, file not found.")
