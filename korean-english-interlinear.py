@@ -6,11 +6,14 @@ database_password = ""
 
 
 ##initialization
+testing = True
+
 import sys
 import os.path
 import html
 import urllib.parse
 import psycopg2
+import textwrap
 
 from konlpy.tag import Mecab
 mecab = Mecab()
@@ -20,13 +23,14 @@ okt = Okt()
 from soylemma import Lemmatizer
 lemmatizer = Lemmatizer()
 
-if(1):
+if(not testing):
     if(len(sys.argv) < 2):
         print("Error, no filename specified.")
         sys.exit(1)
     filename = sys.argv[1]
 else:
-    filename = os.getcwd() + "/Documents/Korean Learning/korean-english-interlinear/sample.txt"
+    #filename = os.getcwd() + "/Documents/Korean Learning/korean-english-interlinear/sample.txt"
+    filename = os.getcwd() + "/Documents/Korean Learning/shincheong.txt"
 
 if not os.path.exists(filename):
     print("Error, file not found.")
@@ -137,6 +141,7 @@ SejongTagset = {
     'SY':   ('OtherSymbol',     'Symbol'), 
     'NR':   ('Numeral',         'Symbol'), 
     'NNBC': ('DependantNoun',   'Noun'), 
+    'UNKNOWN': ('UNKNOWN',   'UNKNOWN'), 
 }
 
 #https://praacticalaac.org/praactical/how-we-do-it-using-language-boards-to-support-aac-use-by-nerissa-hall-and-hillary-jellison/
@@ -152,7 +157,8 @@ SuperClass_Colours = {
     'ForeignWord':  'hsl(0, 0%, 70%)',
     'Interjection': '#cc4a0e',
     'Symbol':       'hsl(0, 0, 20%)',
-    'Particle':     '#657b85'
+    'Particle':     '#657b85',
+    'UNKNOWN':      'hsl(0, 0, 20%)'
 }
 
 def get_sejongtagset_name(tag):
@@ -167,7 +173,7 @@ def get_sejongtagset_superclass(tag):
     if tag in SejongTagset:
         return SejongTagset[tag][1]
     else:
-        print("***Error: can't find " + tag + " in tagset!")
+        print("Note: can't find " + tag + " in tagset!")
         return ""        
 
 def get_sejongtagset_colour(tag):
@@ -189,47 +195,56 @@ def print_tree(tree, prepend = ""):
             print(prepend + "error, unexpected branch type" + str(type(branch)))
     print(prepend + "]")    
 
-def get_trans_new_fetch(word, addition = ""):
+def get_trans_new_fetch(word, original_word, addition = ""):
     if addition == "":
         comparator = "="
     else:
         comparator = "LIKE"
     cur.execute("SELECT word, TRIM(coalesce(def, '')) AS trans FROM korean_english WHERE word " + comparator + " %s UNION SELECT word, TRIM(coalesce(def, '')) AS trans FROM korean_english_added WHERE word " + comparator + " %s;", (word + addition, word + addition))
-    rows = cur.fetchall()
+    rows = cur.fetchall()   
     if type(rows) is list and len(rows) > 0:
         if addition == "":
-            for row in rows:
-                if row is not None:
-                    if row[1] == "":
-                        print("Note, blank dictionary definition for word: " + row[0])
-                        blank_dictionary_definitions.append(row)
-        if len(rows) > 20:
-            return "<br>\n".join(["<br>".join([row[0],row[1]]) for row in rows[0:20] if row is not None]) + "<br>..."
+            oword_blank_defs = sum( 1 for row in rows if row[0] == original_word and row[1] == "" )
+            oword_non_blank_defs = sum( 1 for row in rows if row[0] == original_word and row[1] != "" )
+            if oword_non_blank_defs == 0 and oword_blank_defs > 0:
+                #then we didn't find any non-blank defs and we did find a blank def
+                print("Note, blank dictionary definition for word: " + original_word)
+                blank_dictionary_definitions.append(original_word)
+            
+        return_rows = [
+            (
+                row[1] if word == original_word else
+                " ".join([row[0],row[1]]) 
+            )
+            for row in rows if row is not None and row[1] != ""
+            ]
+        if len(return_rows) > 20:
+            return "\n".join( return_rows[0:20] ) + "\n..."
         else:
-            return "<br>\n".join(["<br>".join([row[0],row[1]]) for row in rows if row is not None])
+            return "\n".join( return_rows )
     return ""
     
-def get_trans_new_recursive(word):
+def get_trans_new_recursive(word, original_word):
     #print("Last ditch searching for translation for: " + word)
     if word == "":
         return ""
-    translation = get_trans_new_fetch(word, "")
+    translation = get_trans_new_fetch(word, original_word, "")
     if translation != "":
         return translation
-    translation = get_trans_new_fetch(word, "_")
+    translation = get_trans_new_fetch(word, original_word, "_")
     if translation != "":
         return translation
-    translation = get_trans_new_fetch(word, "%")
-    if translation != "":
-        return translation
-    return get_trans_new_recursive(word[:-1])
+    # translation = get_trans_new_fetch(word, original_word, "%")
+    # if translation != "":
+    #     return translation
+    return get_trans_new_recursive(word[:-1], original_word)
 
 def get_translation(plain_word):
     if plain_word == "":
         return ""
 
     #first look up the given word in dictionary
-    translation = get_trans_new_fetch(plain_word)
+    translation = get_trans_new_fetch(plain_word, plain_word)
 
     #then try lemmatizing the word one way (returns one), see if in dic
     if translation == "":
@@ -238,7 +253,7 @@ def get_translation(plain_word):
             print("warning, zero length list back from okt for: " + plain_word)
         elif type(lemmatized_word) == list and type(lemmatized_word[0]) == tuple:
             lemmatized_word = lemmatized_word[0][0]
-            translation = get_trans_new_fetch(lemmatized_word)
+            translation = get_trans_new_fetch(lemmatized_word, plain_word)
 
     #then try backup lemmatizing method (returns multiple), see if in dic
     if translation == "":
@@ -246,21 +261,21 @@ def get_translation(plain_word):
         for lemmatized_word in lemmatized_words:
             if type(lemmatized_word) == tuple:
                 lemmatized_word = lemmatized_word[0]
-                translation = get_trans_new_fetch(lemmatized_word)
+                translation = get_trans_new_fetch(lemmatized_word, plain_word)
                 if translation != "": 
                     break
                     
     #then try backup method of extending and truncating recursively
     if translation == "":
-            translation = get_trans_new_recursive(plain_word)
+            translation = get_trans_new_recursive(plain_word, plain_word)
             if translation != "":
                 translation = "(?)" + translation
                 print("Note, no match for word: " + plain_word + ",\n using questionable match: " + translation.replace("<br>\n", "; ").replace("<br>"," ")[:20] + "...")
-                no_translations.append((plain_word, ""))
+                missing_dictionary_entries.append(plain_word)
 
     if translation == "":
         print("Error, no non-empty dictionary entry for word: " + plain_word)
-        no_translations.append((plain_word, ""))
+        missing_dictionary_entries.append(plain_word)
 
     return translation
 
@@ -270,7 +285,7 @@ structured_content = []
 
 #to catch warnings to deal with
 blank_dictionary_definitions = []
-no_translations = []
+missing_dictionary_entries = []
 
 for j in range(len(content)):
     line = content[j]
@@ -285,28 +300,57 @@ for j in range(len(content)):
 def format_tree(branch, d = 0):
     #print("call on: " + str(tree))
     if type(branch) == list:
-        if type(branch[0]) == list:
-            #we have a list of lists
-            if d > 0:
-                xprint('    <li>')
-            xprint('<div class=wrapper>')
-            xprint('    <ol class=sentence>')
-            for twig in branch:
-                format_tree(twig, d + 1)
-            xprint('    </ol>')
-            xprint('</div>')
-            if d > 0:
-                xprint('    </li>')
-        elif type(branch[0]) == tuple:
-            #we have a list of tuples comprising a word
-            format_branch(branch)
-        else:
-            print("error, unexpected branch type" + str(type(branch)))
+        if len(branch) > 0:
+            if type(branch[0]) == list:
+                #we have a list of lists, either further branching or sentence
+                if len(branch[0]) > 0:
+                    if d > 0:
+                        xprint('    <li>')
+                    xprint('<div class=wrapper>')
+                    xprint('    <ol class=sentence>')
+                    for twig in branch:
+                        format_tree(twig, d + 1)
+                    
+                    #check if this was a list of lists of tuples (a sentence)
+                    #and add sentence translate link if so
+                    if type(branch[0][0]) == tuple:
+                        link =  "https://papago.naver.com/?sk=ko&tk=en&st=" + urllib.parse.quote(
+                                    " ".join(
+                                        "".join(tup[0] for tup in twig)
+                                        for twig in branch)
+                                    )
+                        xprint('    <li>')
+                        xprint('      <ol class=comment>')
+                        xprint(f'        <li lang=es><a title="Papago line translation" class=translink target="_blank" rel="noopener noreferrer" href="{link}">&#10093;</a></li>')
+                        xprint('      </ol>')
+                        xprint('    </li>')
+
+                    xprint('    </ol>')
+                    xprint('</div>')
+                    if d > 0:
+                        xprint('    </li>')
+            elif type(branch[0]) == tuple:
+                #we have a list of tuples comprising a word
+                format_word(branch)
+            else:
+                print("error, unexpected branch type" + str(type(branch)))
+    elif type(branch) is str:
+        xprint('<div class=wrapper>')
+        xprint('    <ol class=sentence>')
+        xprint('    <li>')
+        xprint('      <ol class=comment>')
+        xprint('        <li lang=en_MORPH>')
+        xprint(html.escape(branch))
+        xprint('        </li>')
+        xprint('      </ol>')
+        xprint('    </li>')
+        xprint('    </ol>')
+        xprint('</div>')
     else: 
-        print("error, expected list got something else")
+        print("error, expected list or str, got something else")
 
 
-def format_branch(branch):
+def format_word(branch):
     #example format:
     #branch = [('“', 'SSO'), ('톱질', 'NNG'), ('하', 'XSV'), ('세', 'EC')]
 
@@ -316,39 +360,53 @@ def format_branch(branch):
             print("Warning, plain word is empty, printing branch: ")
             print(branch)
 
+    for x in branch:
+        if x[1] == "UNKNOWN":
+            print("Note, unknown class for word: " + x[0])
     full_word = "".join([   (   "<span style='color:" + get_sejongtagset_colour(x[1]) + ";'>" + 
                                 html.escape(x[0]) +
                                 "</span>"
                             ) for x in branch   ])
+    full_word_length = sum(len(x[0]) for x in branch)
                             
     link = "https://en.dict.naver.com/#/search?query=" + urllib.parse.quote(plain_word)
     
-    non_symbol_pos = [ (x[0] + " " + x[1]) for x in branch if x[1][0] != "S" ]
+    non_symbol_pos = [ x[1] for x in branch if x[1][0] != "S" ]
     
-    pos_info = "<br>".join(non_symbol_pos)
-    pos_info_long = "<br>".join([   (
+    pos_info = "/".join(non_symbol_pos)
+    pos_info_long = "\n".join([   (
                                         x[0] + " " + get_sejongtagset_name(x[1])
                                     ) for x in branch if x[1][0] != "S"  ])
                                     
     translation = get_translation(plain_word)
-
-    descriptiontop = html.escape(pos_info).replace("&lt;br&gt;","<br>")
-    tooltiptop = html.escape(pos_info_long).replace("&lt;br&gt;","<br>")
-
-    tshort_split = translation.split("<br>")
-    if len(tshort_split) >= 2:
-        tshort = "<br>".join([tshort_split[0][:10],tshort_split[1][:8]])
-    else: 
-        tshort = ("<br>".join(tshort_split))[:10]
     
-    descriptionbot = html.escape(tshort).replace("&lt;br&gt;","<br>")
-    tooltipbot = html.escape(translation).replace("&lt;br&gt;","<br>")
+    wrapper.width = full_word_length*3 if full_word_length > 1 else 2*3
+    wrapper.max_lines = 4
+    translations = translation.split("\n")
+    if len(translations) > 1:
+        tshort = "\n".join([t[0:wrapper.width] for t in translations])
+        tshort = html.escape(wrapper.fill(tshort)).replace("\n", "<BR>")
+    else:
+        tshort = html.escape(wrapper.fill(translation.replace("\n", "; "))).replace("\n", "<BR>")
+    
+    #tshort_split = translation.split("\n")    
+    # if len(tshort_split) >= 2:
+    #     tshort = "; ".join([tshort_split[0][:10],tshort_split[1][:8]])
+    # else: 
+    #     tshort = ("; ".join(tshort_split))[:10]
+    
+    description = ( html.escape(pos_info) + "\n" + 
+                    tshort
+                    ).replace("\n","<br>")
+    
+    tooltip = ( html.escape(pos_info_long) + "\n\n" +        
+                html.escape(translation)
+                ).replace("\n","<br>")
 
     xprint('    <li>')
     xprint('      <ol class=word>')
-    xprint(f'        <li lang=es><a class=diclink target="_blank" rel="noopener noreferrer" href="{link}">{full_word}</a></li>')
-    xprint(f'        <li lang=en_MORPH class=tooltip>{descriptiontop}<span class=tooltiptext>{tooltiptop}</span></li><br>')
-    xprint(f'        <li lang=en_MORPH class=tooltip>{descriptionbot}<span class=tooltiptext>{tooltipbot}</span></li>')
+    xprint(f'        <li lang=es><a title="Naver word translation" class=diclink target="_blank" rel="noopener noreferrer" href="{link}">{full_word}</a></li>')
+    xprint(f'        <li lang=en_MORPH class=tooltip>{description}<span class=tooltiptext>{tooltip}</span></li><br>')
     xprint('      </ol>')
     xprint('    </li>')
     
@@ -359,40 +417,30 @@ def xprint(message):
     global output
     output = output + message + "\n"
 
+wrapper = textwrap.TextWrapper(placeholder = "]")
 
-for j in range(len(structured_content)):
-    line = structured_content[j]
-    if type(line) is str:
-        xprint('<div class=wrapper>')
-        xprint('    <ol class=sentence>')
-        xprint('    <li>')
-        xprint('      <ol class=comment>')
-        xprint('        <li lang=en_MORPH>')
-        xprint(html.escape(line))
-        xprint('        </li>')
-        xprint('      </ol>')
-        xprint('    </li>')
-        xprint('    </ol>')
-        xprint('</div>')
-    elif type(line) is list:
-        format_tree(line)        
+for branch in structured_content:
+    format_tree(branch)        
+
 
 ##Enter missing words to database
-missing_words = blank_dictionary_definitions + no_translations
-if len(missing_words) > 0:
+missing_words = list(set(blank_dictionary_definitions + missing_dictionary_entries))
+if len(missing_words) > 0 and not testing:
     if(input("\nWould you like to insert " + str(len(missing_words)) + " missing word definitions into database for next run? (y/n):") == "y"):
         submitter = input("Enter your name: ")
         import time    
-        for entry in missing_words:
-            translation = input("For word " + entry[0] + " enter translation, f to finish, or leave blank for unkown:")
+        for word in missing_words:
+            translation = input("For word " + word + " enter translation, f to finish, or leave blank for unkown:")
             if translation == "f": 
                 break
             if translation != "":
                 doe = time.strftime('%Y-%m-%d %H:%M:%S')
-                cur.execute("INSERT INTO korean_english_added (word, def, submitter, doe) VALUES (%s, %s, %s, %s);", (entry[0], translation, submitter, doe))
-        con.commit()
-
+                cur.execute("INSERT INTO korean_english_added (word, def, submitter, doe) VALUES (%s, %s, %s, %s);", (word, translation, submitter, doe))                
+                con.commit()
+                print(cur.rowcount, "record inserted successfully.")
+cur.close()
 con.close()
+
 
 
 ##print and format output
@@ -402,14 +450,13 @@ header = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
-<!--  http://jsfiddle.net/snifty/Ty8Vp/2/-->
-<!-- https://linguistics.stackexchange.com/questions/3/how-do-i-format-an-interlinear-gloss-for-html -->
-<!-- https://stackabuse.com/text-translation-with-google-translate-api-in-python/ -->
-<!-- http://lostintranslationland.blogspot.com/2011/05/heungbu-and-nolbu.html?m=1 -->
-<!-- https://www.w3schools.com/css/css_tooltip.asp -->
-
 <style>
+/* 
+Credit for interlinear css to:
+https://linguistics.stackexchange.com/questions/3/how-do-i-format-an-interlinear-gloss-for-html
+http://jsfiddle.net/snifty/Ty8Vp/2/
+*/
+
 ol,ul{
     list-style:none;
 }
@@ -425,7 +472,8 @@ body {
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,"Fira Sans","Droid Sans","Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
     padding:0;
     margin:0;
-    background-color: #fdf6e4; font-size: 16px;
+    background-color: #fdf6e4; 
+    font-size: 16px;
 }
 
 a{
@@ -480,6 +528,7 @@ ol.comment {
  display: inline-block;   
 }
 
+/* Credit for tooltip css to: https://www.w3schools.com/css/css_tooltip.asp */
 /* Tooltip container */
 .tooltip {
   position: relative;
@@ -491,7 +540,7 @@ ol.comment {
 .tooltip .tooltiptext {
   visibility: hidden;
   width: 120px;
-  background-color: #fdf6e4;
+  background-color: white; /*#fdf6e4;*/
   color: #333;
   text-align: left;
   font-size: 10px;
@@ -527,6 +576,13 @@ border: 1px dotted #ccc;
 a.diclink {
     text-decoration: none;
 }
+
+a.translink {
+    text-decoration: none;
+    font-weight: normal;
+    color: grey;
+}
+
 </style>
 </head>
 <body>
@@ -542,11 +598,12 @@ if len(filename.split(".")) <= 1:
     outfilename = filename
 else:
     outfilename = ".".join(filename.split(".")[0:-1])
-i = 2
-if os.path.exists(outfilename + "-interlinear.html"):
-    while os.path.exists(outfilename + "-" + str(i) + "-interlinear.html"):
-        i = i + 1
-    outfilename = outfilename + "-" + str(i)
+if(not testing):
+    i = 2
+    if os.path.exists(outfilename + "-interlinear.html"):
+        while os.path.exists(outfilename + "-" + str(i) + "-interlinear.html"):
+            i = i + 1
+        outfilename = outfilename + "-" + str(i)
 outfilename = outfilename + "-interlinear.html"
 
 print("\nWriting output to: " + outfilename)
