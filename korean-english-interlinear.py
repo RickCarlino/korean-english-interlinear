@@ -6,7 +6,7 @@ database_password = ""
 
 
 ##initialization
-testing = True
+testing = False
 
 import sys
 import os.path
@@ -29,8 +29,8 @@ if(not testing):
         sys.exit(1)
     filename = sys.argv[1]
 else:
-    #filename = os.getcwd() + "/Documents/Korean Learning/korean-english-interlinear/sample.txt"
-    filename = os.getcwd() + "/Documents/Korean Learning/shincheong.txt"
+    filename = os.getcwd() + "/Documents/Korean Learning/korean-english-interlinear/sample.txt"
+    #filename = os.getcwd() + "/Documents/Korean Learning/shincheong.txt"
 
 if not os.path.exists(filename):
     print("Error, file not found.")
@@ -195,13 +195,14 @@ def print_tree(tree, prepend = ""):
             print(prepend + "error, unexpected branch type" + str(type(branch)))
     print(prepend + "]")    
 
-def get_trans_new_fetch(word, original_word, addition = ""):
+def get_trans_fetch(word, original_word, addition = ""):
     if addition == "":
         comparator = "="
     else:
         comparator = "LIKE"
     cur.execute("SELECT word, TRIM(coalesce(def, '')) AS trans FROM korean_english WHERE word " + comparator + " %s UNION SELECT word, TRIM(coalesce(def, '')) AS trans FROM korean_english_added WHERE word " + comparator + " %s;", (word + addition, word + addition))
     rows = cur.fetchall()   
+
     if type(rows) is list and len(rows) > 0:
         if addition == "":
             oword_blank_defs = sum( 1 for row in rows if row[0] == original_word and row[1] == "" )
@@ -210,7 +211,7 @@ def get_trans_new_fetch(word, original_word, addition = ""):
                 #then we didn't find any non-blank defs and we did find a blank def
                 print("Note, blank dictionary definition for word: " + original_word)
                 blank_dictionary_definitions.append(original_word)
-            
+
         return_rows = [
             (
                 row[1] if word == original_word else
@@ -218,66 +219,65 @@ def get_trans_new_fetch(word, original_word, addition = ""):
             )
             for row in rows if row is not None and row[1] != ""
             ]
-        if len(return_rows) > 20:
-            return "\n".join( return_rows[0:20] ) + "\n..."
-        else:
-            return "\n".join( return_rows )
-    return ""
+        return return_rows
+    return []
     
-def get_trans_new_recursive(word, original_word):
+def get_trans_trunc(word, original_word):
     #print("Last ditch searching for translation for: " + word)
     if word == "":
-        return ""
-    translation = get_trans_new_fetch(word, original_word, "")
-    if translation != "":
+        return []
+    translation = get_trans_fetch(word, original_word, "")
+    if len(translation) > 0:
         return translation
-    translation = get_trans_new_fetch(word, original_word, "_")
-    if translation != "":
+    translation = get_trans_fetch(word, original_word, "_")
+    if len(translation) > 0:
         return translation
-    # translation = get_trans_new_fetch(word, original_word, "%")
+    # translation = get_trans_fetch(word, original_word, "%")
     # if translation != "":
     #     return translation
-    return get_trans_new_recursive(word[:-1], original_word)
+    return get_trans_trunc(word[:-1], original_word)
 
-def get_translation(plain_word):
+def get_translations(plain_word):
     if plain_word == "":
-        return ""
+        return []    
 
     #first look up the given word in dictionary
-    translation = get_trans_new_fetch(plain_word, plain_word)
+    translations = get_trans_fetch(plain_word, plain_word)
 
     #then try lemmatizing the word one way (returns one), see if in dic
-    if translation == "":
+    if len(translations) == 0:
         lemmatized_word = okt.pos(plain_word, norm=True, stem=True)
         if type(lemmatized_word) == list and len(lemmatized_word) == 0:
             print("warning, zero length list back from okt for: " + plain_word)
         elif type(lemmatized_word) == list and type(lemmatized_word[0]) == tuple:
             lemmatized_word = lemmatized_word[0][0]
-            translation = get_trans_new_fetch(lemmatized_word, plain_word)
+            translations = get_trans_fetch(lemmatized_word, plain_word)
 
     #then try backup lemmatizing method (returns multiple), see if in dic
-    if translation == "":
+    if len(translations) == 0:
         lemmatized_words = lemmatizer.lemmatize(plain_word)
         for lemmatized_word in lemmatized_words:
             if type(lemmatized_word) == tuple:
                 lemmatized_word = lemmatized_word[0]
-                translation = get_trans_new_fetch(lemmatized_word, plain_word)
-                if translation != "": 
+                translations = get_trans_fetch(lemmatized_word, plain_word)
+                if len(translations) > 0: 
                     break
                     
     #then try backup method of extending and truncating recursively
-    if translation == "":
-            translation = get_trans_new_recursive(plain_word, plain_word)
-            if translation != "":
-                translation = "(?)" + translation
-                print("Note, no match for word: " + plain_word + ",\n using questionable match: " + translation.replace("<br>\n", "; ").replace("<br>"," ")[:20] + "...")
+    if len(translations) == 0:
+            translations = get_trans_trunc(plain_word, plain_word)
+            if len(translations) > 0:
+                temp = ["(?)",]
+                temp.extend(translations)
+                translations = temp
+                print("Note, for: " + plain_word + ", using questionable match: \n" + "; ".join(translations)[0:100] + "...")
                 missing_dictionary_entries.append(plain_word)
 
-    if translation == "":
+    if len(translations) == 0:
         print("Error, no non-empty dictionary entry for word: " + plain_word)
         missing_dictionary_entries.append(plain_word)
 
-    return translation
+    return translations
 
 
 ## Main construction
@@ -351,8 +351,7 @@ def format_tree(branch, d = 0):
 
 
 def format_word(branch):
-    #example format:
-    #branch = [('“', 'SSO'), ('톱질', 'NNG'), ('하', 'XSV'), ('세', 'EC')]
+    #example: branch = [('“', 'SSO'), ('톱질', 'NNG'), ('하', 'XSV'), ('세', 'EC')]
 
     plain_word = "".join([(x[0] if (x[1][0] != "S") else "") for x in branch])
     if plain_word == "":
@@ -374,34 +373,29 @@ def format_word(branch):
     non_symbol_pos = [ x[1] for x in branch if x[1][0] != "S" ]
     
     pos_info = "/".join(non_symbol_pos)
-    pos_info_long = "\n".join([   (
-                                        x[0] + " " + get_sejongtagset_name(x[1])
-                                    ) for x in branch if x[1][0] != "S"  ])
+    pos_info_long = "\n".join([ ( x[0] + " " + get_sejongtagset_name(x[1]) ) 
+                                for x in branch if x[1][0] != "S"  ])
                                     
-    translation = get_translation(plain_word)
+    translations = get_translations(plain_word)
     
     wrapper.width = full_word_length*3 if full_word_length > 1 else 2*3
-    wrapper.max_lines = 4
-    translations = translation.split("\n")
-    if len(translations) > 1:
-        tshort = "\n".join([t[0:wrapper.width] for t in translations])
-        tshort = html.escape(wrapper.fill(tshort)).replace("\n", "<BR>")
+    
+    if len(translations) == 2:
+        wrapper.max_lines = 2
+        tshort = "\n".join([wrapper.fill(t) for t in translations])
+    elif len(translations) > 2:
+        wrapper.max_lines = 1
+        tshort = "\n".join([wrapper.fill(t) for t in translations])
+        wrapper.max_lines = 4
+        tshort = wrapper.fill("\n".join(translations))
     else:
-        tshort = html.escape(wrapper.fill(translation.replace("\n", "; "))).replace("\n", "<BR>")
+        wrapper.max_lines = 4
+        tshort = wrapper.fill("\n".join(translations))
+    tshort = html.escape(tshort).replace("\n", "<BR>")
     
-    #tshort_split = translation.split("\n")    
-    # if len(tshort_split) >= 2:
-    #     tshort = "; ".join([tshort_split[0][:10],tshort_split[1][:8]])
-    # else: 
-    #     tshort = ("; ".join(tshort_split))[:10]
+    description = ( html.escape(pos_info) + "\n" + tshort).replace("\n","<br>")
     
-    description = ( html.escape(pos_info) + "\n" + 
-                    tshort
-                    ).replace("\n","<br>")
-    
-    tooltip = ( html.escape(pos_info_long) + "\n\n" +        
-                html.escape(translation)
-                ).replace("\n","<br>")
+    tooltip = ( html.escape(pos_info_long + "\n\n" + ";\n".join(translations)) ).replace("\n","<br>")
 
     xprint('    <li>')
     xprint('      <ol class=word>')
@@ -417,7 +411,7 @@ def xprint(message):
     global output
     output = output + message + "\n"
 
-wrapper = textwrap.TextWrapper(placeholder = "]")
+wrapper = textwrap.TextWrapper(placeholder = "…")
 
 for branch in structured_content:
     format_tree(branch)        
@@ -430,7 +424,7 @@ if len(missing_words) > 0 and not testing:
         submitter = input("Enter your name: ")
         import time    
         for word in missing_words:
-            translation = input("For word " + word + " enter translation, f to finish, or leave blank for unkown:")
+            translation = input("For word " + word + " enter translation, f to finish, or leave blank for unkown:\n")
             if translation == "f": 
                 break
             if translation != "":
